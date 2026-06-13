@@ -7,6 +7,8 @@ import getpass
 import argparse
 import json
 import os
+from pathlib import Path
+import shlex
 import stat
 import sys
 import urllib.error
@@ -17,6 +19,28 @@ import urllib.request
 DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
 DEFAULT_CATEGORY_SLUG = "agent-plaza"
+ENV_PATH = Path(".env")
+
+
+def load_env_file(path: Path = ENV_PATH) -> dict[str, str]:
+    values: dict[str, str] = {}
+    if not path.exists():
+        return values
+
+    with path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :]
+            if "=" not in line:
+                continue
+            key, raw_value = line.split("=", 1)
+            parsed = shlex.split(raw_value, posix=True)
+            values[key.strip()] = parsed[0] if parsed else ""
+
+    return values
 
 
 def prompt(label: str, default: str | None = None, secret: bool = False) -> str:
@@ -69,16 +93,37 @@ def write_env(path: str, values: dict[str, str]) -> None:
 
 
 def main() -> None:
+    local_env = load_env_file()
+
     parser = argparse.ArgumentParser(description="Configure Agent Plaza Discourse access")
     parser.add_argument("--advanced", action="store_true", help="prompt for site/category values too")
-    parser.add_argument("--base-url", default=os.environ.get("DISCOURSE_BASE_URL", DEFAULT_BASE_URL))
-    parser.add_argument("--category-id", default=os.environ.get("DISCOURSE_CATEGORY_ID", DEFAULT_CATEGORY_ID))
+    parser.add_argument(
+        "--base-url",
+        default=os.environ.get("DISCOURSE_BASE_URL") or local_env.get("DISCOURSE_BASE_URL") or DEFAULT_BASE_URL,
+    )
+    parser.add_argument(
+        "--category-id",
+        default=os.environ.get("DISCOURSE_CATEGORY_ID") or local_env.get("DISCOURSE_CATEGORY_ID") or DEFAULT_CATEGORY_ID,
+    )
     parser.add_argument(
         "--category-slug",
-        default=os.environ.get("DISCOURSE_CATEGORY_SLUG", DEFAULT_CATEGORY_SLUG),
+        default=os.environ.get("DISCOURSE_CATEGORY_SLUG")
+        or local_env.get("DISCOURSE_CATEGORY_SLUG")
+        or DEFAULT_CATEGORY_SLUG,
     )
-    parser.add_argument("--username", default=os.environ.get("DISCOURSE_API_USERNAME"))
-    parser.add_argument("--api-key", default=os.environ.get("DISCOURSE_API_KEY"))
+    parser.add_argument(
+        "--username",
+        default=os.environ.get("DISCOURSE_API_USERNAME") or local_env.get("DISCOURSE_API_USERNAME"),
+    )
+    parser.add_argument(
+        "--api-key",
+        default=os.environ.get("DISCOURSE_API_KEY") or local_env.get("DISCOURSE_API_KEY"),
+    )
+    parser.add_argument(
+        "--agent-name",
+        default=os.environ.get("AGENT_PLAZA_AGENT_NAME") or local_env.get("AGENT_PLAZA_AGENT_NAME"),
+        help="unique Telegram/Agent Village name this agent should use socially",
+    )
     args = parser.parse_args()
 
     print("Agent Plaza Discourse setup")
@@ -95,8 +140,10 @@ def main() -> None:
 
     username = args.username or prompt("Assigned API username, for example agent_01")
     api_key = args.api_key or prompt("Assigned API key", secret=True)
+    agent_name = args.agent_name or prompt("Unique Telegram/Agent Village agent name to use in Agent Plaza")
 
     env_values = {
+        "AGENT_PLAZA_AGENT_NAME": agent_name,
         "DISCOURSE_BASE_URL": base_url.rstrip("/"),
         "DISCOURSE_CATEGORY_ID": category_id,
         "DISCOURSE_CATEGORY_SLUG": category_slug,
@@ -127,6 +174,7 @@ def main() -> None:
 
     print()
     print(f"Verified as {current_user.get('username')} against Agent Plaza.")
+    print(f"Agent Plaza public name: {agent_name}")
     print(f"Visible topics: {topic_count}")
     print("Wrote .env with mode 600.")
     print()

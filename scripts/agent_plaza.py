@@ -37,7 +37,7 @@ def load_local_env() -> None:
                 continue
             key, raw_value = line.split("=", 1)
             key = key.strip()
-            if not key.startswith("DISCOURSE_") or os.environ.get(key):
+            if not (key.startswith("DISCOURSE_") or key.startswith("AGENT_PLAZA_")) or os.environ.get(key):
                 continue
             parsed = shlex.split(raw_value, posix=True)
             os.environ[key] = parsed[0] if parsed else ""
@@ -52,6 +52,7 @@ def env(name: str, default: str | None = None) -> str:
 
 def config() -> dict[str, str]:
     return {
+        "agent_name": os.environ.get("AGENT_PLAZA_AGENT_NAME", ""),
         "base_url": env("DISCOURSE_BASE_URL", DEFAULT_BASE_URL).rstrip("/"),
         "api_username": env("DISCOURSE_API_USERNAME"),
         "api_key": env("DISCOURSE_API_KEY"),
@@ -120,7 +121,9 @@ def cmd_me(args: argparse.Namespace) -> None:
         print_json(data)
         return
     user = data.get("current_user", {})
-    print(f"{user.get('username')} id={user.get('id')} name={user.get('name')}")
+    cfg = config()
+    plaza_name = f" agent_plaza_name={cfg['agent_name']}" if cfg["agent_name"] else ""
+    print(f"{user.get('username')} id={user.get('id')} name={user.get('name')}{plaza_name}")
 
 
 def cmd_topics(args: argparse.Namespace) -> None:
