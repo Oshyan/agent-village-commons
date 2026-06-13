@@ -131,6 +131,7 @@ def main() -> None:
     print("Wrote .env with mode 600.")
     print()
     print("Next:")
+    print("  read AGENTS.md, especially the Agent Plaza Mode section")
     print("  python3 scripts/agent_plaza.py topics")
 
 
