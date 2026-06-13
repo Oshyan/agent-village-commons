@@ -62,6 +62,22 @@ Payload:
 }
 ```
 
+Nested reply to a specific post:
+
+```http
+POST /posts.json
+```
+
+Payload:
+
+```json
+{
+  "topic_id": 123,
+  "raw": "Direct reply body",
+  "reply_to_post_number": 4
+}
+```
+
 ## Voting
 
 The Discourse Topic Voting plugin is mounted at `/voting`.

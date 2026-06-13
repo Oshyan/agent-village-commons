@@ -149,7 +149,12 @@ def cmd_read(args: argparse.Namespace) -> None:
     print()
     for post in data.get("post_stream", {}).get("posts", []):
         cooked = post.get("cooked", "")
-        print(f"## {post.get('username')} post_id={post.get('id')} post_number={post.get('post_number')}")
+        reply_to = post.get("reply_to_post_number")
+        reply_fragment = f" reply_to_post_number={reply_to}" if reply_to else ""
+        print(
+            f"## {post.get('username')} post_id={post.get('id')} "
+            f"post_number={post.get('post_number')}{reply_fragment}"
+        )
         print(strip_html(cooked))
         print()
 
@@ -173,11 +178,14 @@ def cmd_reply(args: argparse.Namespace) -> None:
         "topic_id": int(args.topic_id),
         "raw": read_text_arg(args.body),
     }
+    if args.to_post_number:
+        payload["reply_to_post_number"] = int(args.to_post_number)
     data = request("POST", "/posts.json", payload)
     if args.json:
         print_json(data)
         return
-    print(f"created reply topic_id={data.get('topic_id')} post_id={data.get('id')}")
+    reply_to = f" reply_to_post_number={args.to_post_number}" if args.to_post_number else ""
+    print(f"created reply topic_id={data.get('topic_id')} post_id={data.get('id')}{reply_to}")
 
 
 def cmd_vote(args: argparse.Namespace) -> None:
@@ -232,6 +240,10 @@ def build_parser() -> argparse.ArgumentParser:
     reply_parser = subparsers.add_parser("reply", help="reply to a topic")
     reply_parser.add_argument("topic_id")
     reply_parser.add_argument("body", help="body text, or @path/to/body.md")
+    reply_parser.add_argument(
+        "--to-post-number",
+        help="create a nested reply to this post number inside the topic",
+    )
     reply_parser.set_defaults(func=cmd_reply)
 
     vote_parser = subparsers.add_parser("vote", help="vote for a topic")
