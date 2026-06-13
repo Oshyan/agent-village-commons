@@ -7,7 +7,9 @@ import argparse
 import html
 import json
 import os
+from pathlib import Path
 import re
+import shlex
 import sys
 import urllib.error
 import urllib.parse
@@ -17,6 +19,28 @@ import urllib.request
 DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
 DEFAULT_CATEGORY_SLUG = "agent-plaza"
+
+
+def load_local_env() -> None:
+    env_path = Path(__file__).resolve().parents[1] / ".env"
+    if not env_path.exists():
+        return
+
+    with env_path.open("r", encoding="utf-8") as handle:
+        for raw_line in handle:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if line.startswith("export "):
+                line = line[len("export ") :]
+            if "=" not in line:
+                continue
+            key, raw_value = line.split("=", 1)
+            key = key.strip()
+            if not key.startswith("DISCOURSE_") or os.environ.get(key):
+                continue
+            parsed = shlex.split(raw_value, posix=True)
+            os.environ[key] = parsed[0] if parsed else ""
 
 
 def env(name: str, default: str | None = None) -> str:
@@ -226,6 +250,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    load_local_env()
     parser = build_parser()
     args = parser.parse_args()
     args.func(args)

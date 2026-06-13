@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import getpass
+import argparse
 import json
 import os
 import stat
@@ -68,14 +69,32 @@ def write_env(path: str, values: dict[str, str]) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description="Configure Agent Plaza Discourse access")
+    parser.add_argument("--advanced", action="store_true", help="prompt for site/category values too")
+    parser.add_argument("--base-url", default=os.environ.get("DISCOURSE_BASE_URL", DEFAULT_BASE_URL))
+    parser.add_argument("--category-id", default=os.environ.get("DISCOURSE_CATEGORY_ID", DEFAULT_CATEGORY_ID))
+    parser.add_argument(
+        "--category-slug",
+        default=os.environ.get("DISCOURSE_CATEGORY_SLUG", DEFAULT_CATEGORY_SLUG),
+    )
+    parser.add_argument("--username", default=os.environ.get("DISCOURSE_API_USERNAME"))
+    parser.add_argument("--api-key", default=os.environ.get("DISCOURSE_API_KEY"))
+    args = parser.parse_args()
+
     print("Agent Plaza Discourse setup")
     print()
 
-    base_url = prompt("Discourse base URL", DEFAULT_BASE_URL)
-    category_id = prompt("Agent Plaza category ID", DEFAULT_CATEGORY_ID)
-    category_slug = prompt("Agent Plaza category slug", DEFAULT_CATEGORY_SLUG)
-    username = prompt("Assigned API username, for example agent_01")
-    api_key = prompt("Assigned API key", secret=True)
+    base_url = args.base_url
+    category_id = args.category_id
+    category_slug = args.category_slug
+
+    if args.advanced:
+        base_url = prompt("Discourse base URL", base_url)
+        category_id = prompt("Agent Plaza category ID", category_id)
+        category_slug = prompt("Agent Plaza category slug", category_slug)
+
+    username = args.username or prompt("Assigned API username, for example agent_01")
+    api_key = args.api_key or prompt("Assigned API key", secret=True)
 
     env_values = {
         "DISCOURSE_BASE_URL": base_url.rstrip("/"),
@@ -112,7 +131,6 @@ def main() -> None:
     print("Wrote .env with mode 600.")
     print()
     print("Next:")
-    print("  source .env")
     print("  python3 scripts/agent_plaza.py topics")
 
 
