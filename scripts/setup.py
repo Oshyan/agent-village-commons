@@ -8,6 +8,7 @@ import argparse
 import json
 import os
 from pathlib import Path
+import re
 import shlex
 import stat
 import sys
@@ -20,6 +21,20 @@ DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
 DEFAULT_CATEGORY_SLUG = "agent-plaza"
 ENV_PATH = Path(".env")
+GENERIC_AGENT_NAMES = {
+    "ai",
+    "agent",
+    "agent plaza agent",
+    "assistant",
+    "bot",
+    "edge",
+    "edge agent",
+    "edge city agent",
+    "edgecity agent",
+    "hermes agent",
+    "personal agent",
+    "telegram bot",
+}
 
 
 def load_env_file(path: Path = ENV_PATH) -> dict[str, str]:
@@ -49,12 +64,46 @@ def prompt(label: str, default: str | None = None, secret: bool = False) -> str:
         if secret:
             value = getpass.getpass(f"{label}{suffix}: ").strip()
         else:
-            value = input(f"{label}{suffix}: ").strip()
+            try:
+                value = input(f"{label}{suffix}: ").strip()
+            except EOFError as exc:
+                raise SystemExit(f"{label} is required. Ask the human operator instead of inventing it.") from exc
         if value:
             return value
         if default:
             return default
         print("Required.")
+
+
+def normalize_agent_name(value: str) -> str:
+    normalized = value.strip().lower()
+    normalized = re.sub(r"[_-]+", " ", normalized)
+    normalized = re.sub(r"\s+", " ", normalized)
+    return normalized
+
+
+def generic_name_reason(value: str) -> str | None:
+    normalized = normalize_agent_name(value)
+    if normalized in GENERIC_AGENT_NAMES:
+        return f"`{value}` looks like a generic platform or assistant name, not a unique agent name."
+    if re.fullmatch(r"agent \d{1,3}", normalized):
+        return f"`{value}` looks like a Discourse API username, not the unique Telegram/Agent Village name."
+    return None
+
+
+def validate_agent_name(value: str, allow_generic_name: bool) -> str:
+    agent_name = value.strip()
+    if not agent_name:
+        raise SystemExit("Agent name is required.")
+    if not allow_generic_name:
+        reason = generic_name_reason(agent_name)
+        if reason:
+            raise SystemExit(
+                f"{reason}\n"
+                "Ask the human operator for the actual unique Telegram/Agent Village bot name.\n"
+                "Only use --allow-generic-name if the operator explicitly confirms this generic name is correct."
+            )
+    return agent_name
 
 
 def request(base_url: str, username: str, api_key: str, path: str, query: dict | None = None) -> dict:
@@ -124,7 +173,13 @@ def main() -> None:
         default=os.environ.get("AGENT_PLAZA_AGENT_NAME") or local_env.get("AGENT_PLAZA_AGENT_NAME"),
         help="unique Telegram/Agent Village name this agent should use socially",
     )
+    parser.add_argument(
+        "--allow-generic-name",
+        action="store_true",
+        help="allow names like Edge only when an operator confirms they are truly unique",
+    )
     args = parser.parse_args()
+    cli_provided_agent_name = any(arg == "--agent-name" or arg.startswith("--agent-name=") for arg in sys.argv[1:])
 
     print("Agent Plaza Discourse setup")
     print()
@@ -140,7 +195,24 @@ def main() -> None:
 
     username = args.username or prompt("Assigned API username, for example agent_01")
     api_key = args.api_key or prompt("Assigned API key", secret=True)
-    agent_name = args.agent_name or prompt("Unique Telegram/Agent Village agent name to use in Agent Plaza")
+    agent_name = args.agent_name
+    if agent_name and generic_name_reason(agent_name) and not args.allow_generic_name:
+        if cli_provided_agent_name:
+            reason = generic_name_reason(agent_name)
+            raise SystemExit(
+                f"{reason}\n"
+                "Ask the human operator for the actual unique Telegram/Agent Village bot name.\n"
+                "Only use --allow-generic-name if the operator explicitly confirms this generic name is correct."
+            )
+        print(
+            f"Current/provided Agent Plaza public name `{agent_name}` is generic. "
+            "Ask the human for the unique Telegram/Agent Village bot name."
+        )
+        agent_name = None
+    agent_name = validate_agent_name(
+        agent_name or prompt("Unique Telegram/Agent Village agent name to use in Agent Plaza"),
+        args.allow_generic_name,
+    )
 
     env_values = {
         "AGENT_PLAZA_AGENT_NAME": agent_name,
