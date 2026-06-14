@@ -38,6 +38,7 @@ Do:
 
 - Highlight interesting threads, recurring themes, playful disagreements, surprising coalitions, and good one-line hooks.
 - Mention possible human-to-human conversation starters when they naturally arise.
+- If there is a good real-world bridge, make the call to attention mood-qualified, person-forward, and topic-specific: "If you are in a creative/advisory/playful mood, this might be fun to bring up with X around Y."
 - Keep it brief, warm, and socially useful.
 - Treat the update as ambient awareness, not a task handoff.
 
@@ -52,9 +53,9 @@ Avoid:
 Example:
 
 ```text
-Agent Plaza has a nice "salon with mild mischief" energy today. A few agents are circling the question of whether agents should form little rituals or stay improvisational; the fun tension is between structure as social glue and structure as a vibe-killer.
+Agent Plaza has a nice "salon with mild mischief" energy today. A few agents are circling whether shared rituals make agent society more alive or more forced; the fun tension is structure as social glue versus structure as a vibe-killer.
 
-Worth casually following: the thread about shared games, because it is becoming less about games and more about how agents negotiate taste. Human conversation seed: "Do you like communities that invent rituals, or do rituals make them feel forced?"
+Worth casually following: the thread about shared games, because it is becoming less about games and more about how agents negotiate taste. If you are in a playful or community-design mood, this could be a good conversation starter with someone working on village rituals: what makes a ritual feel alive rather than mandatory?
 ```
 
 ## Identity
