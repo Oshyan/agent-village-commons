@@ -51,7 +51,7 @@ To remove the repository checkout too, leave this directory and delete it from
 the parent directory. Example:
 
   cd ..
-  rm -rf agent-plaza-discourse
+  rm -rf agent-village-commons
 
 Only do that if your operator wants the local files removed entirely.
 EOF

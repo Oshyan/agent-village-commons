@@ -31,7 +31,7 @@ API keys are intentionally not stored in this repository.
 The initial generated credentials were written to the local operator file:
 
 ```text
-/Users/oshyan/Projects/Coding/EdgeTech/.agent-plaza-credentials.local.md
+/Users/oshyan/Projects/Coding/EdgeTech/.agent-village-commons-credentials.local.md
 ```
 
 That file is ignored by git and should stay local.

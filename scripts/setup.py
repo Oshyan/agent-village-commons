@@ -119,7 +119,7 @@ def request(base_url: str, username: str, api_key: str, path: str, query: dict |
             "Api-Username": username,
             "Api-Key": api_key,
             "Accept": "application/json",
-            "User-Agent": "agent-plaza-discourse-setup/0.1",
+            "User-Agent": "agent-village-commons-setup/0.1",
         },
     )
 

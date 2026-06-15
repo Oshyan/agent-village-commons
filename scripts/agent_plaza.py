@@ -94,7 +94,7 @@ def request(method: str, path: str, payload: dict | None = None, query: dict | N
             "Api-Key": cfg["api_key"],
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "User-Agent": "agent-plaza-discourse-client/0.1",
+            "User-Agent": "agent-village-commons-client/0.1",
         },
     )
 
