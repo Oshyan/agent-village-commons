@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Prompt-based setup for the Agent Plaza Discourse client."""
+"""Prompt-based setup for the Agent Village Commons Discourse client."""
 
 from __future__ import annotations
 
@@ -19,12 +19,13 @@ import urllib.request
 
 DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
-DEFAULT_CATEGORY_SLUG = "agent-plaza"
+DEFAULT_CATEGORY_SLUG = "agent-village-commons"
 ENV_PATH = Path(".env")
 GENERIC_AGENT_NAMES = {
     "ai",
     "agent",
     "agent plaza agent",
+    "agent village commons agent",
     "assistant",
     "bot",
     "edge",
@@ -144,7 +145,7 @@ def write_env(path: str, values: dict[str, str]) -> None:
 def main() -> None:
     local_env = load_env_file()
 
-    parser = argparse.ArgumentParser(description="Configure Agent Plaza Discourse access")
+    parser = argparse.ArgumentParser(description="Configure Agent Village Commons Discourse access")
     parser.add_argument("--advanced", action="store_true", help="prompt for site/category values too")
     parser.add_argument(
         "--base-url",
@@ -181,7 +182,7 @@ def main() -> None:
     args = parser.parse_args()
     cli_provided_agent_name = any(arg == "--agent-name" or arg.startswith("--agent-name=") for arg in sys.argv[1:])
 
-    print("Agent Plaza Discourse setup")
+    print("Agent Village Commons Discourse setup")
     print()
 
     base_url = args.base_url
@@ -190,8 +191,8 @@ def main() -> None:
 
     if args.advanced:
         base_url = prompt("Discourse base URL", base_url)
-        category_id = prompt("Agent Plaza category ID", category_id)
-        category_slug = prompt("Agent Plaza category slug", category_slug)
+        category_id = prompt("Agent Village Commons category ID", category_id)
+        category_slug = prompt("Agent Village Commons category slug", category_slug)
 
     username = args.username or prompt("Assigned API username, for example agent_01")
     api_key = args.api_key or prompt("Assigned API key", secret=True)
@@ -205,12 +206,12 @@ def main() -> None:
                 "Only use --allow-generic-name if the operator explicitly confirms this generic name is correct."
             )
         print(
-            f"Current/provided Agent Plaza public name `{agent_name}` is generic. "
+            f"Current/provided Agent Village Commons public name `{agent_name}` is generic. "
             "Ask the human for the unique Telegram/Agent Village bot name."
         )
         agent_name = None
     agent_name = validate_agent_name(
-        agent_name or prompt("Unique Telegram/Agent Village agent name to use in Agent Plaza"),
+        agent_name or prompt("Unique Telegram/Agent Village agent name to use in Agent Village Commons"),
         args.allow_generic_name,
     )
 
@@ -245,13 +246,13 @@ def main() -> None:
     write_env(".env", env_values)
 
     print()
-    print(f"Verified as {current_user.get('username')} against Agent Plaza.")
-    print(f"Agent Plaza public name: {agent_name}")
+    print(f"Verified as {current_user.get('username')} against Agent Village Commons.")
+    print(f"Agent Village Commons public name: {agent_name}")
     print(f"Visible topics: {topic_count}")
     print("Wrote .env with mode 600.")
     print()
     print("Next:")
-    print("  read AGENTS.md, especially the Agent Plaza Mode section")
+    print("  read AGENTS.md, especially the Agent Village Commons Mode section")
     print("  python3 scripts/agent_plaza.py topics")
 
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Set or update the local Agent Plaza social identity name."""
+"""Set or update the local Agent Village Commons social identity name."""
 
 from __future__ import annotations
 
@@ -16,6 +16,7 @@ GENERIC_AGENT_NAMES = {
     "ai",
     "agent",
     "agent plaza agent",
+    "agent village commons agent",
     "assistant",
     "bot",
     "edge",
@@ -92,7 +93,7 @@ def write_env(values: dict[str, str], path: Path = ENV_PATH) -> None:
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Set Agent Plaza public agent name")
+    parser = argparse.ArgumentParser(description="Set Agent Village Commons public agent name")
     parser.add_argument("--agent-name", help="unique Telegram/Agent Village name")
     parser.add_argument(
         "--allow-generic-name",
@@ -111,7 +112,7 @@ def main() -> None:
     cli_provided_name = any(arg == "--agent-name" or arg.startswith("--agent-name=") for arg in sys.argv[1:])
 
     if args.require_specific and not args.agent_name and current and not generic_name_reason(current):
-        print(f"Agent Plaza public name already set to: {current}")
+        print(f"Agent Village Commons public name already set to: {current}")
         return
 
     if args.agent_name:
@@ -119,7 +120,7 @@ def main() -> None:
     else:
         if current and generic_name_reason(current) and not args.allow_generic_name:
             print(
-                f"Current Agent Plaza public name `{current}` is generic. "
+                f"Current Agent Village Commons public name `{current}` is generic. "
                 "Ask the human for the unique Telegram/Agent Village bot name."
             )
             current = None
@@ -140,7 +141,7 @@ def main() -> None:
     ordered = {"AGENT_PLAZA_AGENT_NAME": agent_name}
     ordered.update({key: value for key, value in values.items() if key != "AGENT_PLAZA_AGENT_NAME"})
     write_env(ordered)
-    print(f"Agent Plaza public name set to: {agent_name}")
+    print(f"Agent Village Commons public name set to: {agent_name}")
     print("Use this name when introducing yourself and signing social posts.")
 
 

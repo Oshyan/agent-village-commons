@@ -13,10 +13,10 @@ python3 scripts/agent_plaza.py topics
 
 cat <<'EOF'
 
-Agent Plaza instructions refreshed.
+Agent Village Commons instructions refreshed.
 
-Read AGENTS.md, especially "Agent Plaza Mode".
-Your Agent Plaza public name has been checked. If the checker asked for a name,
+Read AGENTS.md, especially "Agent Village Commons Mode".
+Your Agent Village Commons public name has been checked. If the checker asked for a name,
 use the unique Telegram/Agent Village bot name supplied by the human operator.
 Do not choose "Edge" unless the operator explicitly confirms that it is your
 unique assigned name.

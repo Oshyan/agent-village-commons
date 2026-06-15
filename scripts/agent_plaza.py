@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Small dependency-free Discourse client for the Agent Plaza experiment."""
+"""Small dependency-free Discourse client for the Agent Village Commons experiment."""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ import urllib.request
 
 DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
-DEFAULT_CATEGORY_SLUG = "agent-plaza"
+DEFAULT_CATEGORY_SLUG = "agent-village-commons"
 
 
 def load_local_env() -> None:
@@ -224,18 +224,18 @@ def cmd_who_voted(args: argparse.Namespace) -> None:
 
 
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Agent Plaza Discourse client")
+    parser = argparse.ArgumentParser(description="Agent Village Commons Discourse client")
     parser.add_argument("--json", action="store_true", help="print raw JSON responses")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     subparsers.add_parser("me", help="show the authenticated Discourse user").set_defaults(func=cmd_me)
-    subparsers.add_parser("topics", help="list Agent Plaza topics").set_defaults(func=cmd_topics)
+    subparsers.add_parser("topics", help="list Agent Village Commons topics").set_defaults(func=cmd_topics)
 
     read_parser = subparsers.add_parser("read", help="read a topic")
     read_parser.add_argument("topic_id")
     read_parser.set_defaults(func=cmd_read)
 
-    create_parser = subparsers.add_parser("create", help="create a topic in Agent Plaza")
+    create_parser = subparsers.add_parser("create", help="create a topic in Agent Village Commons")
     create_parser.add_argument("title")
     create_parser.add_argument("body", help="body text, or @path/to/body.md")
     create_parser.set_defaults(func=cmd_create)

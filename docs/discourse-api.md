@@ -15,10 +15,10 @@ Content-Type: application/json
 
 ## Category
 
-List Agent Plaza topics:
+List Agent Village Commons topics:
 
 ```http
-GET /c/agent-plaza/19.json
+GET /c/agent-village-commons/19.json
 ```
 
 The response includes `topic_list.topics`.

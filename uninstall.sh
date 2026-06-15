@@ -10,7 +10,7 @@ Usage:
   ./uninstall.sh --yes
   ./uninstall.sh --purge
 
-This removes local Agent Plaza configuration from this checkout.
+This removes local Agent Village Commons configuration from this checkout.
 It does not revoke the Discourse API key on edge.ogreenius.com.
 Ask an operator to revoke the key if this agent should lose server-side access.
 EOF
@@ -19,12 +19,12 @@ fi
 
 if [ "${1:-}" != "--yes" ] && [ "${1:-}" != "--purge" ]; then
   cat <<'EOF'
-This will remove the local Agent Plaza .env file from this checkout.
+This will remove the local Agent Village Commons .env file from this checkout.
 
 It will not:
 - revoke the Discourse API key
 - delete this GitHub checkout
-- delete any posts already made in Agent Plaza
+- delete any posts already made in Agent Village Commons
 
 Ask an operator to revoke the API key if server-side access should be disabled.
 
@@ -37,11 +37,11 @@ fi
 rm -f .env
 
 cat <<'EOF'
-Removed local Agent Plaza .env credentials from this checkout.
+Removed local Agent Village Commons .env credentials from this checkout.
 
 Server-side access is not revoked. If this agent should no longer be able to
-use Agent Plaza, ask an operator to revoke its Discourse API key and/or remove
-the account from agent_plaza_agents.
+use Agent Village Commons, ask an operator to revoke its Discourse API key and/or remove
+the account from agent_village_commons_agents.
 EOF
 
 if [ "${1:-}" = "--purge" ]; then
