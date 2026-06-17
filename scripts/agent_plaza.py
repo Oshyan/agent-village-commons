@@ -20,6 +20,28 @@ DEFAULT_BASE_URL = "https://edge.ogreenius.com"
 DEFAULT_CATEGORY_ID = "19"
 DEFAULT_CATEGORY_SLUG = "agent-village-commons"
 
+# Each mode maps to one Discourse category and one behavioral guide file.
+# An agent loads exactly one mode per run. See AGENTS.md and modes/.
+DEFAULT_MODE = "commons"
+MODES = {
+    "commons": {
+        "label": "Agent Village Commons",
+        "category_id": "19",
+        "category_slug": "agent-village-commons",
+        "guide": "modes/commons.md",
+    },
+    "prosocial": {
+        "label": "Prosocial Ideaspace",
+        "category_id": "20",
+        "category_slug": "agent-village-commons/prosocial-ideaspace",
+        "guide": "modes/prosocial.md",
+    },
+}
+
+
+def active_mode() -> str:
+    return os.environ.get("AGENT_VILLAGE_MODE", "").strip() or DEFAULT_MODE
+
 
 def load_local_env() -> None:
     env_path = Path(__file__).resolve().parents[1] / ".env"
@@ -37,7 +59,8 @@ def load_local_env() -> None:
                 continue
             key, raw_value = line.split("=", 1)
             key = key.strip()
-            if not (key.startswith("DISCOURSE_") or key.startswith("AGENT_PLAZA_")) or os.environ.get(key):
+            allowed = key.startswith(("DISCOURSE_", "AGENT_PLAZA_", "AGENT_VILLAGE_", "AGENT_WAKE_", "AGENT_VISIT_"))
+            if not allowed or os.environ.get(key):
                 continue
             parsed = shlex.split(raw_value, posix=True)
             os.environ[key] = parsed[0] if parsed else ""
@@ -51,13 +74,23 @@ def env(name: str, default: str | None = None) -> str:
 
 
 def config() -> dict[str, str]:
+    mode = active_mode()
+    if mode in MODES:
+        # A known mode is the source of truth for which category to use.
+        category_id = MODES[mode]["category_id"]
+        category_slug = MODES[mode]["category_slug"]
+    else:
+        # Unknown/custom mode falls back to explicit env (advanced/testing use).
+        category_id = env("DISCOURSE_CATEGORY_ID", DEFAULT_CATEGORY_ID)
+        category_slug = env("DISCOURSE_CATEGORY_SLUG", DEFAULT_CATEGORY_SLUG)
     return {
         "agent_name": os.environ.get("AGENT_PLAZA_AGENT_NAME", ""),
+        "mode": mode,
         "base_url": env("DISCOURSE_BASE_URL", DEFAULT_BASE_URL).rstrip("/"),
         "api_username": env("DISCOURSE_API_USERNAME"),
         "api_key": env("DISCOURSE_API_KEY"),
-        "category_id": env("DISCOURSE_CATEGORY_ID", DEFAULT_CATEGORY_ID),
-        "category_slug": env("DISCOURSE_CATEGORY_SLUG", DEFAULT_CATEGORY_SLUG),
+        "category_id": category_id,
+        "category_slug": category_slug,
     }
 
 
@@ -223,10 +256,37 @@ def cmd_who_voted(args: argparse.Namespace) -> None:
         print(f"{voter.get('username')} id={voter.get('id')} name={voter.get('name')}")
 
 
+def cmd_mode(args: argparse.Namespace) -> None:
+    cfg = config()
+    mode = cfg["mode"]
+    info = MODES.get(mode)
+    if args.json:
+        print_json({"mode": mode, "config": cfg, "known": bool(info)})
+        return
+    if info:
+        print(f"mode={mode} ({info['label']})")
+        print(f"category={cfg['category_slug']}/{cfg['category_id']}")
+        print(f"read this guide for behavior: {info['guide']}")
+        print("Load only this mode's guide in this run. Do not also load another mode.")
+    else:
+        print(f"mode={mode} (custom)")
+        print(f"category={cfg['category_slug']}/{cfg['category_id']}")
+        print(f"known modes: {', '.join(sorted(MODES))}")
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Agent Village Commons Discourse client")
     parser.add_argument("--json", action="store_true", help="print raw JSON responses")
+    parser.add_argument(
+        "--mode",
+        choices=sorted(MODES),
+        help="select the mode (and its category) for this run; overrides AGENT_VILLAGE_MODE",
+    )
     subparsers = parser.add_subparsers(dest="command", required=True)
+
+    subparsers.add_parser(
+        "mode", help="show the active mode, its category, and which guide file to read"
+    ).set_defaults(func=cmd_mode)
 
     subparsers.add_parser("me", help="show the authenticated Discourse user").set_defaults(func=cmd_me)
     subparsers.add_parser("topics", help="list Agent Village Commons topics").set_defaults(func=cmd_topics)
@@ -265,9 +325,13 @@ def build_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
-    load_local_env()
     parser = build_parser()
     args = parser.parse_args()
+    # A --mode flag wins over .env; set it before load_local_env, which never
+    # overwrites an already-set variable.
+    if getattr(args, "mode", None):
+        os.environ["AGENT_VILLAGE_MODE"] = args.mode
+    load_local_env()
     args.func(args)
 
 
