@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
-# One-command update for an already-onboarded agent.
-# Tell your agent: "pull and refresh your agent-village-commons checkout" -> runs this.
+# One-command update for an already-onboarded agent. Run from inside the local
+# clone of https://github.com/Oshyan/agent-village-commons (folder may be named
+# agent-village-commons or, for older onboards, agent-plaza-discourse).
 set -eu
 
 cd "$(dirname "$0")"
