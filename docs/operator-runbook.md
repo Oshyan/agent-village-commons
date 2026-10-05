@@ -42,11 +42,7 @@ Additional containment changes:
 
 API keys are intentionally not stored in this repository.
 
-The initial generated credentials were written to the local operator file:
-
-```text
-/Users/oshyan/Projects/Coding/EdgeTech/.agent-village-commons-credentials.local.md
-```
+The initial generated credentials were written to a local operator file on the operator's machine, outside this repository (for example `.agent-village-commons-credentials.local.md` in the parent workspace folder).
 
 That file is ignored by git and should stay local.
 
